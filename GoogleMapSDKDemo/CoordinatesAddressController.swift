@@ -11,7 +11,7 @@ import GoogleMaps
 
 class CoordinatesAddressController: UIViewController, CLLocationManagerDelegate {
     
-    
+    let defaultZoom:Float = 12
     var locationManager: CLLocationManager?
     var mapView: GMSMapView?
     let coorindateAddressView = CoordinateAddressView(frame: .zero)
@@ -39,17 +39,7 @@ class CoordinatesAddressController: UIViewController, CLLocationManagerDelegate 
     
     private func setupGoogleMap() {
         GMSServices.provideAPIKey("AIzaSyAv13WFjzJssOU9vzl67VW3cUVD2ww52sY")
-        
-        let camera = GMSCameraPosition.camera(withLatitude: -33.86, longitude: 151.20, zoom: 10.0)
-        mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
-        view = mapView
-        
-        // Creates a marker in the center of the map.
-        let marker = GMSMarker()
-        marker.position = CLLocationCoordinate2D(latitude: -33.86, longitude: 151.20)
-        marker.title = "Sydney"
-        marker.snippet = "Australia"
-        marker.map = mapView
+        setDefaultLocation(latitude: -33.86, longitude: 151.20)
         guard let gestureRecognizers = mapView?.gestureRecognizers else {return}
         for (index,gesture) in gestureRecognizers.enumerated() {
             if index == 0 {
@@ -70,7 +60,14 @@ class CoordinatesAddressController: UIViewController, CLLocationManagerDelegate 
         coorindateAddressView.anchor(top: view.safeAreaLayoutGuide.topAnchor, left: view.leftAnchor, bottom: nil, right: view.rightAnchor, paddingTop: 30, paddingLeft: 8, paddingBottom: 0, paddingRight: 8, width: 0, height: coorindateAddressViewHeight / 8)
     }
     
-  
+    private func setDefaultLocation(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
+        let camera = GMSCameraPosition.camera(withLatitude: latitude, longitude: longitude, zoom: defaultZoom)
+        mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
+        view = mapView
+        let marker = GMSMarker(position: CLLocationCoordinate2D(latitude: latitude, longitude: longitude))
+        marker.title = "Default"
+        marker.map = mapView
+    }
 }
 
 extension CoordinatesAddressController: CoodinateAddressDelegate {
@@ -79,26 +76,32 @@ extension CoordinatesAddressController: CoodinateAddressDelegate {
     }
     
     func tappedSearch(text: String?) {
+        guard let coordinates = convertTextToLocation(text: text) else {return}
+        updateMap(coordinates: coordinates)
+        view.endEditing(false)
+    }
+    
+    private func updateMap(coordinates: CLLocationCoordinate2D) {
+        let marker = GMSMarker(position: coordinates)
+        mapView?.camera = GMSCameraPosition.camera(withLatitude: coordinates.latitude, longitude: coordinates.longitude, zoom: defaultZoom)
+        marker.map = mapView
+        let geoCoder = GMSGeocoder()
+        geoCoder.reverseGeocodeCoordinate(coordinates) { (response, err) in
+            if let address = response?.results()?.first {
+                marker.title = "Latitude: \(address.coordinate.latitude.rounded()), Longitude: \(address.coordinate.longitude.rounded())"
+                marker.snippet = address.thoroughfare
+            }
+        }
+    }
+    
+    private func convertTextToLocation(text: String?) -> CLLocationCoordinate2D? {
         guard
             let textArray = text?.replacingOccurrences(of: " ", with: "").components(separatedBy: ","),
             let latFloat = Float(textArray[0]),
             let longFloat = Float(textArray[1]),
             let lat = CLLocationDegrees(exactly: latFloat),
-            let long = CLLocationDegrees(exactly: longFloat) else {return}
-        let coordinates = CLLocationCoordinate2D(latitude: lat, longitude: long)
-        let marker = GMSMarker(position: coordinates)
-        mapView?.camera = GMSCameraPosition.camera(withLatitude: lat, longitude: long, zoom: 15)
-        marker.map = mapView
-        let geoCoder = GMSGeocoder()
-        geoCoder.reverseGeocodeCoordinate(coordinates) { (response, err) in
-            if let address = response?.results()?.first {
-                marker.title = text
-                marker.snippet = address.thoroughfare
-                
-            }
-            
-        }
-        view.endEditing(false)
+            let long = CLLocationDegrees(exactly: longFloat) else {return nil}
+        return CLLocationCoordinate2D(latitude: lat, longitude: long)
     }
     
 }
