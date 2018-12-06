@@ -74,9 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				04642CB621B30CF3009B9128 /* AppDelegate.swift */,
-				04642CB821B30CF3009B9128 /* CoordinatesAddressController.swift */,
-				04C8DB8C21B8AD9B000B9930 /* AddressAutocompleteVC.swift */,
-				04C8DB8A21B8A94C000B9930 /* MainTabController.swift */,
+				04C8DB8E21B9088B000B9930 /* Controllers */,
 				04642CCF21B5E083009B9128 /* Views */,
 				04642CCE21B5E07C009B9128 /* Extensions */,
 				04642CBA21B30CF3009B9128 /* Main.storyboard */,
@@ -103,6 +101,16 @@
 				04642CD221B5E6CB009B9128 /* SpacerView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		04C8DB8E21B9088B000B9930 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				04642CB821B30CF3009B9128 /* CoordinatesAddressController.swift */,
+				04C8DB8C21B8AD9B000B9930 /* AddressAutocompleteVC.swift */,
+				04C8DB8A21B8A94C000B9930 /* MainTabController.swift */,
+			);
+			path = Controllers;
 			sourceTree = "<group>";
 		};
 		1FB140F97CD84550EDC2EE74 /* Pods */ = {
